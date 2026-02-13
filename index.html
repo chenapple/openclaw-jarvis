@@ -715,6 +715,11 @@ body::after{
 .chat-controls label{font-size:10px;color:var(--text3);font-family:var(--hud);letter-spacing:1px}
 .chat-controls select{background:var(--bg);border:1px solid var(--border);color:var(--cyan);font-family:var(--mono);font-size:10px;padding:2px 6px;cursor:pointer}
 .chat-controls select:focus{border-color:var(--cyan)}
+.tts-btn{background:none;border:1px solid var(--border);color:var(--gold);cursor:pointer;padding:2px 6px;margin-left:auto;display:flex;align-items:center;gap:4px;font-family:var(--hud);font-size:9px;letter-spacing:1px;transition:all .2s}
+.tts-btn:hover{border-color:var(--gold);background:rgba(212,164,78,0.1)}
+.tts-btn.off{opacity:0.35;color:var(--text3)}
+.tts-btn.off svg line.strike{display:block}
+.tts-btn svg line.strike{display:none}
 
 /* ── Channel Config Form ── */
 .ch-cfg-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(212,164,78,0.06)}
@@ -737,6 +742,76 @@ body::after{
 .ch-tier-label:first-child{margin-top:4px}
 
 @media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+
+/* ── Holographic HUD Overlay ── */
+#holo-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .6s ease,visibility .6s ease;font-family:var(--hud)}
+#holo-overlay.open{opacity:1;visibility:visible}
+.holo-dim{position:absolute;top:0;bottom:0;left:0;right:420px;background:rgba(0,6,14,.45);backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px)}
+.holo-scanline{position:absolute;top:0;bottom:0;left:0;right:420px;overflow:hidden}
+.holo-scanline::after{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 10%,rgba(0,229,255,.22) 50%,transparent 90%);animation:hScan 5s linear infinite}
+@keyframes hScan{0%{top:-2px}100%{top:100%}}
+
+/* ── SVG Ring System ── */
+.holo-rings{position:absolute;top:43%;left:52%;width:60vh;height:60vh;transform:translate(-50%,-50%)}
+.hr-glow{fill:none;stroke:rgba(0,229,255,.05);stroke-width:14;filter:blur(8px)}
+.hr-1{fill:none;stroke:rgba(0,229,255,.2);stroke-width:3.5;stroke-dasharray:50 15 8 15;transform-origin:center;animation:hrS 24s linear infinite}
+.hr-2{fill:none;stroke:rgba(0,229,255,.22);stroke-width:1;stroke-dasharray:6 14;transform-origin:center;animation:hrS 18s linear infinite reverse}
+.hr-3{fill:none;stroke:rgba(0,229,255,.14);stroke-width:3;stroke-dasharray:80 8 4 8;transform-origin:center;animation:hrS 14s linear infinite}
+.hr-4{fill:none;stroke:rgba(136,221,255,.18);stroke-width:1;stroke-dasharray:3 9;transform-origin:center;animation:hrS 10s linear infinite reverse}
+.hr-5{fill:none;stroke:rgba(0,229,255,.07);stroke-width:1;stroke-dasharray:1 5;transform-origin:center;animation:hrS 32s linear infinite}
+@keyframes hrS{to{transform:rotate(360deg)}}
+.hr-tick{stroke:rgba(0,229,255,.22);stroke-width:1.5}
+.hr-tick-sm{stroke:rgba(0,229,255,.08);stroke-width:1}
+.hr-node{fill:rgba(0,229,255,.5)}
+
+/* ── Data Panels ── */
+.hp{position:absolute;padding:14px 18px;border:1px solid rgba(0,229,255,.12);background:rgba(0,10,20,.65);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);min-width:130px;animation:hpIn .6s ease-out both}
+.hp::before{content:'';position:absolute;top:-1px;left:10px;right:10px;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.25),transparent)}
+@keyframes hpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.hp-label{font-size:9px;letter-spacing:2.5px;color:rgba(0,229,255,.4);text-transform:uppercase;margin-bottom:8px}
+.hp-val{font-size:26px;font-weight:700;color:#00e5ff;text-shadow:0 0 10px rgba(0,229,255,.35);line-height:1}
+.hp-val.sm{font-size:18px}
+.hp-sub{font-size:10px;color:rgba(136,221,255,.3);margin-top:5px;letter-spacing:1px}
+
+/* Panel positions — all on left side, two columns */
+.hp-clock{top:10%;left:3%;animation-delay:.1s}
+.hp-power{top:38%;left:3%;animation-delay:.2s}
+.hp-sessions{bottom:15%;left:3%;animation-delay:.3s}
+.hp-tokens{top:10%;left:calc(50% - 420px);animation-delay:.15s}
+.hp-cost{top:38%;left:calc(50% - 420px);animation-delay:.25s}
+.hp-sysinfo{bottom:15%;left:calc(50% - 420px);animation-delay:.35s}
+
+/* Clock */
+.hp-time{font-size:36px;font-weight:700;color:#00e5ff;text-shadow:0 0 14px rgba(0,229,255,.45);letter-spacing:3px;line-height:1}
+.hp-time-sec{font-size:16px;color:rgba(0,229,255,.3);vertical-align:super;margin-left:2px}
+.hp-date{font-size:11px;color:rgba(0,229,255,.3);letter-spacing:3px;margin-top:5px;text-transform:uppercase}
+
+/* ── Circular Gauge ── */
+.hg{width:88px;height:88px;margin:8px 0}
+.hg svg{width:100%;height:100%}
+.hg-bg{fill:none;stroke:rgba(0,229,255,.08);stroke-width:3}
+.hg-fill{fill:none;stroke:#00e5ff;stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 4px rgba(0,229,255,.4));transition:stroke-dashoffset 1s ease}
+.hg-text{fill:#00e5ff;font-family:var(--hud);font-size:14px;text-anchor:middle;dominant-baseline:central;font-weight:700}
+.hg-lbl{fill:rgba(0,229,255,.35);font-family:var(--hud);font-size:8px;text-anchor:middle;letter-spacing:1.5px;text-transform:uppercase}
+
+/* ── Corner Brackets — left side only ── */
+.holo-bracket{position:absolute;width:50px;height:50px;border-color:rgba(0,229,255,.18);border-style:solid;border-width:0}
+.holo-bracket.tl{top:14px;left:14px;border-top-width:2px;border-left-width:2px}
+.holo-bracket.tr{top:14px;right:434px;border-top-width:2px;border-right-width:2px}
+.holo-bracket.bl{bottom:14px;left:14px;border-bottom-width:2px;border-left-width:2px}
+.holo-bracket.br{bottom:14px;right:434px;border-bottom-width:2px;border-right-width:2px}
+
+/* ── Bottom Status Bar — left side ── */
+.holo-bar{position:absolute;bottom:20px;left:calc((100% - 420px) / 2);transform:translateX(-50%);display:flex;gap:24px;font-size:9px;letter-spacing:2px;color:rgba(0,229,255,.25);text-transform:uppercase}
+.holo-bar .on{color:rgba(0,229,255,.6)}
+
+/* ── Flicker ── */
+@keyframes hFlicker{0%,89%,91%,95%,97%,100%{opacity:1}90%{opacity:.35}96%{opacity:.55}}
+.h-flicker{animation:hFlicker 6s step-end infinite}
+
+/* ── Gauge pulse ── */
+@keyframes hgPulse{0%,100%{filter:drop-shadow(0 0 3px rgba(0,229,255,.4))}50%{filter:drop-shadow(0 0 8px rgba(0,229,255,.7))}}
+.hg-fill.pulse{animation:hgPulse 2.5s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -852,6 +927,10 @@ body::after{
         <option value="on">on</option>
         <option value="full">full</option>
       </select>
+      <button id="tts-btn" class="tts-btn" onclick="JarvisTTS.toggle()" title="Toggle Voice Output">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><line class="strike" x1="1" y1="1" x2="23" y2="23"/></svg>
+        <span id="tts-label">VOICE</span>
+      </button>
     </div>
     <div id="chat-messages"><div class="empty">ESTABLISHING CONNECTION<span class="loading-dots"></span></div></div>
     <div id="chat-input-area">
@@ -869,6 +948,73 @@ body::after{
     </div>
     <div class="panel-body" id="log-body"></div>
   </div>
+</div>
+
+<!-- Holographic HUD Overlay -->
+<div id="holo-overlay">
+  <div class="holo-dim"></div>
+  <div class="holo-scanline"></div>
+  <!-- SVG Ring System -->
+  <svg class="holo-rings" viewBox="0 0 600 600" id="holo-rings-svg">
+    <circle cx="300" cy="300" r="260" class="hr-glow"/>
+    <circle cx="300" cy="300" r="280" class="hr-1"/>
+    <circle cx="300" cy="300" r="235" class="hr-2"/>
+    <circle cx="300" cy="300" r="190" class="hr-3"/>
+    <circle cx="300" cy="300" r="140" class="hr-4"/>
+    <circle cx="300" cy="300" r="95" class="hr-5"/>
+  </svg>
+  <!-- Left Panels -->
+  <div class="hp hp-clock">
+    <div class="hp-label">System Time</div>
+    <div class="hp-time"><span id="h-time">--:--</span><span class="hp-time-sec" id="h-sec">00</span></div>
+    <div class="hp-date" id="h-date">--- --- -- ----</div>
+  </div>
+  <div class="hp hp-power">
+    <div class="hp-label">Arc Reactor</div>
+    <div class="hg"><svg viewBox="0 0 72 72">
+      <circle cx="36" cy="36" r="30" class="hg-bg"/>
+      <circle cx="36" cy="36" r="30" class="hg-fill pulse" id="h-pwr-fill" stroke-dasharray="188.5" stroke-dashoffset="18.85" transform="rotate(-90,36,36)"/>
+      <text x="36" y="33" class="hg-text" id="h-pwr-text">90%</text>
+      <text x="36" y="48" class="hg-lbl">POWER</text>
+    </svg></div>
+  </div>
+  <div class="hp hp-sessions">
+    <div class="hp-label">Active Sessions</div>
+    <div class="hp-val" id="h-sessions">0</div>
+    <div class="hp-sub" id="h-sessions-sub">STANDBY</div>
+  </div>
+  <!-- Right Panels -->
+  <div class="hp hp-tokens">
+    <div class="hp-label">Token Usage</div>
+    <div class="hp-val sm h-flicker" id="h-tokens">—</div>
+    <div class="hp-sub" id="h-tokens-sub">TODAY</div>
+  </div>
+  <div class="hp hp-cost">
+    <div class="hp-label">Cost Analysis</div>
+    <div class="hg"><svg viewBox="0 0 72 72">
+      <circle cx="36" cy="36" r="30" class="hg-bg"/>
+      <circle cx="36" cy="36" r="30" class="hg-fill" id="h-cost-fill" stroke-dasharray="188.5" stroke-dashoffset="150" transform="rotate(-90,36,36)"/>
+      <text x="36" y="33" class="hg-text" id="h-cost-text">$0</text>
+      <text x="36" y="48" class="hg-lbl">TOTAL</text>
+    </svg></div>
+  </div>
+  <div class="hp hp-sysinfo">
+    <div class="hp-label">System Status</div>
+    <div class="hp-val sm" id="h-sys-status" style="color:#0f6">ONLINE</div>
+    <div class="hp-sub" id="h-sys-ver">JARVIS v1.0</div>
+  </div>
+  <!-- Bottom Bar -->
+  <div class="holo-bar">
+    <span class="on" id="h-bar-conn">● CONNECTED</span>
+    <span>SYS NOMINAL</span>
+    <span id="h-bar-uptime">UPTIME 0m</span>
+    <span>PROTO v3</span>
+  </div>
+  <!-- Brackets -->
+  <div class="holo-bracket tl"></div>
+  <div class="holo-bracket tr"></div>
+  <div class="holo-bracket bl"></div>
+  <div class="holo-bracket br"></div>
 </div>
 
 <script>
@@ -974,7 +1120,7 @@ function connect() {
   setConnState(false, t('linking'));
   try { ws = new WebSocket(GW_URL); } catch(e) { log('error', 'WebSocket error: ' + e.message); scheduleReconnect(); return; }
   ws.onopen = () => log('info', 'WebSocket open — awaiting challenge');
-  ws.onmessage = (evt) => { try { handleFrame(JSON.parse(evt.data)); } catch(e){} };
+  ws.onmessage = (evt) => { try { handleFrame(JSON.parse(evt.data)); } catch(e){ console.error('[jarvis] frame error:', e); } };
   ws.onerror = () => log('error', 'WebSocket error');
   ws.onclose = (evt) => { log('warn', 'WebSocket closed (code=' + evt.code + ')'); setConnState(false, t('offline')); connected = false; scheduleReconnect(); };
 }
@@ -1001,7 +1147,10 @@ function request(method, params) {
 
 // ── Frame handler ──
 function handleFrame(frame) {
-  if (frame.type === 'event') handleEvent(frame);
+  if (frame.type === 'event') {
+    if (frame.event !== 'tick') console.log('[jarvis:frame]', frame.event, frame.payload?.stream || frame.payload?.state || '');
+    handleEvent(frame);
+  }
   else if (frame.type === 'res') handleResponse(frame);
 }
 function handleResponse(frame) {
@@ -1043,6 +1192,7 @@ function onHelloOk(payload) {
   setConnState(true, t('online'));
   log('success','Gateway connected');
   if (window._imSfxConnect) window._imSfxConnect();
+
   serverInfo = payload?.server || {};
   if (payload?.snapshot) {
     if (payload.snapshot.presence) presenceList = payload.snapshot.presence;
@@ -1231,7 +1381,8 @@ function onChatEvent(payload) {
     if (!chatStreaming[sid]) {
       const div = appendChatMessage('assistant','',null,'stream-'+sid);
       div.querySelector('.msg-content').innerHTML = '<span class="streaming-dot"></span>';
-      chatStreaming[sid] = { el: div, content:'' };
+      chatStreaming[sid] = { el: div, content:'', _ttsLen: 0 };
+      JarvisTTS.startRound();
     }
     return chatStreaming[sid];
   }
@@ -1252,19 +1403,28 @@ function onChatEvent(payload) {
 
   if (st === 'started' || st === 'start') {
     ensureStream();
+    JarvisTTS.startRound();
     scrollChat();
   } else if (['delta','running','streaming','update','block_delta','block_stream','partial'].includes(st)) {
     const s = ensureStream();
     const chunk = extractContent();
     if (chunk) {
       // If message.content looks like the full accumulated text, use it; otherwise append delta
-      if (message?.content && message.content.length > s.content.length) {
-        s.content = message.content;
+      if (message?.content && blocksToText(message.content).length > s.content.length) {
+        s.content = blocksToText(message.content);
       } else if (delta?.content || delta?.text) {
-        s.content += (delta.content || delta.text);
+        s.content += (typeof delta.content === 'string' ? delta.content : delta.text || blocksToText(delta.content));
       } else if (chunk !== s.content) {
         s.content = chunk;
       }
+    }
+    // Feed TTS with new text delta (works regardless of event format)
+    if (JarvisTTS.enabled) {
+      const prevLen = s._ttsLen || 0;
+      if (s.content.length > prevLen) {
+        JarvisTTS.feedChunk(s.content.slice(prevLen));
+      }
+      s._ttsLen = s.content.length;
     }
     s.el.querySelector('.msg-content').innerHTML = renderMarkdown(s.content) + '<span class="streaming-dot"></span>';
     scrollChat();
@@ -1282,13 +1442,14 @@ function onChatEvent(payload) {
       }
       addLocalMsg('assistant', finalContent, ts || Date.now());
       delete chatStreaming[sid]; scrollChat();
-      if (Object.keys(chatStreaming).length === 0) moveCamBack();
+      if (Object.keys(chatStreaming).length === 0) { JarvisTTS.flush(); moveCamBack(); }
     } else {
       // No stream existed, just show the message directly
       const content = extractContent();
       if (content) { const cTs = message?.timestamp || Date.now(); appendChatMessage('assistant', content, cTs); addLocalMsg('assistant', content, cTs); scrollChat(); moveCamBack(); }
     }
   } else if (st === 'error' || st === 'aborted') {
+    JarvisTTS.stop();
     const s = chatStreaming[sid];
     if (s) {
       s.el.querySelector('.msg-content').innerHTML = `<span style="color:var(--red)">[${esc(st)}] ${esc(payload.errorMessage||payload.error?.message||'ABORTED')}</span>`;
@@ -1320,6 +1481,7 @@ function onChatEvent(payload) {
 async function sendChat() {
   const text = $chatInput.value.trim();
   if (!text || !connected) return;
+  JarvisTTS.stop();
   $chatInput.value = ''; $chatInput.style.height = 'auto';
   const sendTs = Date.now();
   appendChatMessage('user', text, sendTs); scrollChat();
@@ -1384,6 +1546,92 @@ function onAgentEvent(payload) {
 
   renderUsageKpis();
 }
+
+// ── Holographic HUD Control ──
+const $holoOverlay = document.getElementById('holo-overlay');
+let _holoTimer = null, _holoDataIv = null;
+
+function holoShow(autoHideMs) {
+  if (_holoTimer) { clearTimeout(_holoTimer); _holoTimer = null; }
+  $holoOverlay.classList.add('open');
+  holoUpdateData();
+  if (!_holoDataIv) _holoDataIv = setInterval(holoUpdateData, 1000);
+  if (autoHideMs) _holoTimer = setTimeout(holoHide, autoHideMs);
+}
+function holoHide() {
+  $holoOverlay.classList.remove('open');
+  if (_holoTimer) { clearTimeout(_holoTimer); _holoTimer = null; }
+  if (_holoDataIv) { clearInterval(_holoDataIv); _holoDataIv = null; }
+}
+
+function holoUpdateData() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0'), mm = String(now.getMinutes()).padStart(2,'0'), ss = String(now.getSeconds()).padStart(2,'0');
+  const el = id => document.getElementById(id);
+  el('h-time').textContent = hh + ':' + mm;
+  el('h-sec').textContent = ss;
+  const wd = ['SUN','MON','TUE','WED','THU','FRI','SAT'], mo = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  el('h-date').textContent = wd[now.getDay()] + ' ' + mo[now.getMonth()] + ' ' + now.getDate() + ' ' + now.getFullYear();
+  // Sessions
+  const s1 = document.getElementById('kpi-sessions'), s2 = document.getElementById('kpi-sessions-sub');
+  if (s1) el('h-sessions').textContent = s1.textContent;
+  if (s2) el('h-sessions-sub').textContent = s2.textContent;
+  // Tokens
+  const t1 = document.getElementById('kpi-today-tokens'), t2 = document.getElementById('kpi-today-cost');
+  if (t1) el('h-tokens').textContent = t1.textContent;
+  if (t2) el('h-tokens-sub').textContent = t2.textContent;
+  // Cost gauge
+  const c1 = document.getElementById('kpi-total-cost');
+  if (c1) {
+    const txt = c1.textContent; el('h-cost-text').textContent = txt;
+    const num = parseFloat(txt.replace(/[^0-9.]/g,'')) || 0;
+    el('h-cost-fill').setAttribute('stroke-dashoffset', 188.5 * (1 - Math.min(num / 50, 1)));
+  }
+  // Power gauge (fluctuate near 90%)
+  const pwr = connected ? 88 + Math.floor(Math.random() * 12) : 0;
+  el('h-pwr-fill').setAttribute('stroke-dashoffset', 188.5 * (1 - pwr / 100));
+  el('h-pwr-text').textContent = pwr + '%';
+  // Status
+  el('h-sys-status').textContent = connected ? 'ONLINE' : 'OFFLINE';
+  el('h-sys-status').style.color = connected ? '#0f6' : '#f44';
+  const bc = el('h-bar-conn');
+  if (bc) { bc.textContent = connected ? '● CONNECTED' : '○ OFFLINE'; bc.className = connected ? 'on' : ''; }
+  if (connectedAt) {
+    const m = Math.floor((Date.now() - connectedAt) / 60000), h = Math.floor(m / 60);
+    el('h-bar-uptime').textContent = 'UPTIME ' + (h > 0 ? h + 'h ' : '') + (m % 60) + 'm';
+  }
+  if (serverInfo?.version) el('h-sys-ver').textContent = 'GATEWAY v' + serverInfo.version;
+}
+
+// Generate SVG tick marks on rings
+(function initHoloRings() {
+  const svg = document.getElementById('holo-rings-svg'); if (!svg) return;
+  const ns = 'http://www.w3.org/2000/svg';
+  for (let i = 0; i < 72; i++) {
+    const a = i * 5, big = i % 6 === 0, med = i % 3 === 0;
+    const r1 = big ? 265 : med ? 270 : 274, r2 = 280, rad = a * Math.PI / 180;
+    const l = document.createElementNS(ns, 'line');
+    l.setAttribute('x1', 300 + r1 * Math.sin(rad)); l.setAttribute('y1', 300 - r1 * Math.cos(rad));
+    l.setAttribute('x2', 300 + r2 * Math.sin(rad)); l.setAttribute('y2', 300 - r2 * Math.cos(rad));
+    l.setAttribute('class', big ? 'hr-tick' : 'hr-tick-sm');
+    svg.appendChild(l);
+  }
+  // Nodes at cardinal points on ring-2 (r=235)
+  [0,90,180,270].forEach(d => {
+    const rad = d * Math.PI / 180, c = document.createElementNS(ns,'circle');
+    c.setAttribute('cx', 300 + 235 * Math.sin(rad)); c.setAttribute('cy', 300 - 235 * Math.cos(rad));
+    c.setAttribute('r','3'); c.setAttribute('class','hr-node'); svg.appendChild(c);
+  });
+})();
+
+// ── Focus mode HUD toggle (persisted) ──
+let _holoReady = false, _holoEnabled = localStorage.getItem('holo-hud-enabled') !== 'false';
+setTimeout(() => { _holoReady = true; }, 1500);
+$chatInput.addEventListener('focus', () => { if (_holoReady && _holoEnabled) holoShow(); });
+$chatInput.addEventListener('blur', () => { setTimeout(() => { if (document.activeElement !== $chatInput) holoHide(); }, 400); });
+function setHoloEnabled(v) { _holoEnabled = v; localStorage.setItem('holo-hud-enabled', v); if (!v) holoHide(); }
+
+
 
 
 // ── Gateway Control ──
@@ -2469,6 +2717,13 @@ function renderSystemTab() {
   const $body = document.getElementById('settings-body');
   let html = '';
 
+  // HUD toggle
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);background:rgba(212,164,78,0.02)">';
+  html += '<div><div style="font-size:11px;color:var(--cyan);font-family:var(--hud);letter-spacing:1px">HOLOGRAPHIC HUD</div>';
+  html += '<div style="font-size:10px;color:var(--text3);margin-top:2px">' + t('holoHudDesc') + '</div></div>';
+  html += '<label class="ch-toggle"><input type="checkbox" id="holo-hud-toggle" onchange="setHoloEnabled(this.checked)"' + (_holoEnabled ? ' checked' : '') + '><span class="ch-toggle-slider"></span></label>';
+  html += '</div>';
+
   // Fallbacks section
   html += '<div style="font-size:11px;color:var(--cyan);font-family:var(--hud);letter-spacing:1px;margin-bottom:10px">' + t('fallbacksTitle') + '</div>';
   html += '<div id="fallbacks-area"><div style="color:var(--text3);font-size:12px">' + t('loading') + '...</div></div>';
@@ -2677,12 +2932,14 @@ const i18n = {
     logsTitle: 'LOGS', logsGateway: 'GATEWAY LOGS', logsChannel: 'CHANNEL LOGS',
     logsRefresh: 'REFRESH', logsLines: 'Lines:',
     logsNoEntries: 'No log entries found.',
+    holoHudDesc: 'Show holographic HUD in focus mode',
     doctorTitle: 'SYSTEM DIAGNOSTICS',
     doctorRun: 'RUN DOCTOR', doctorRunning: 'Running diagnostics…',
     fallbacksTitle: 'FALLBACK MODELS',
     fallbacksNone: 'No fallback models configured.',
     fallbacksAdd: 'ADD FALLBACK', fallbacksRemove: 'REMOVE',
     fallbacksHint: 'Add model ID (e.g. openai/gpt-4o):',
+    ttsOn: 'VOICE ON', ttsOff: 'VOICE OFF',
   },
   zh: {
     online: '已连接', offline: '离线', linking: '连接中',
@@ -2760,12 +3017,14 @@ const i18n = {
     logsTitle: '日志', logsGateway: 'GATEWAY 日志', logsChannel: '频道日志',
     logsRefresh: '刷新', logsLines: '行数:',
     logsNoEntries: '暂无日志。',
+    holoHudDesc: '聚焦模式时显示全息 HUD',
     doctorTitle: '系统诊断',
     doctorRun: '运行诊断', doctorRunning: '正在诊断…',
     fallbacksTitle: '回退模型',
     fallbacksNone: '未配置回退模型。',
     fallbacksAdd: '添加回退', fallbacksRemove: '移除',
     fallbacksHint: '输入模型 ID（如 openai/gpt-4o）：',
+    ttsOn: '语音开', ttsOff: '语音关',
   }
 };
 function t(key) { return i18n[lang]?.[key] || i18n.en[key] || key; }
@@ -2822,7 +3081,205 @@ function toggleLang() {
   lang = lang === 'en' ? 'zh' : 'en';
   localStorage.setItem('jarvis-lang', lang);
   applyLang();
+  JarvisTTS.init();
+  JarvisTTS._updateUI();
 }
+
+// ── JARVIS TTS (Text-to-Speech with comm channel SFX) ──
+const JarvisTTS = {
+  enabled: localStorage.getItem('jarvis-tts') !== 'off',
+  speaking: false,
+  queue: [],
+  buffer: '',
+  voice: null,
+  _noiseOn: false,
+  _firstOfRound: false,
+  _closing: false,
+  _sentenceCount: 0,     // track sentences spoken in current round
+  _pauseMs: 280,         // pause between sentences for natural rhythm
+
+  init() {
+    const voices = speechSynthesis.getVoices();
+    const isZh = lang === 'zh';
+    if (!isZh) {
+      // JARVIS = British male AI butler. Prefer en-GB voices, then premium en-US.
+      this.voice =
+           voices.find(v => /Daniel/i.test(v.name) && /en.GB/i.test(v.lang))
+        || voices.find(v => /Daniel/i.test(v.name) && /en/i.test(v.lang))
+        || voices.find(v => /Arthur/i.test(v.name) && /en.GB/i.test(v.lang))
+        || voices.find(v => /Oliver/i.test(v.name) && /en.GB/i.test(v.lang))
+        || voices.find(v => v.lang.startsWith('en-GB'))
+        || voices.find(v => /Aaron/i.test(v.name) && /en/i.test(v.lang))
+        || voices.find(v => /Alex/i.test(v.name) && /en/i.test(v.lang))
+        || voices.find(v => v.lang.startsWith('en'));
+    } else {
+      // Chinese: prefer higher quality zh-CN voices
+      this.voice =
+           voices.find(v => /Tingting/i.test(v.name) && v.lang.startsWith('zh'))
+        || voices.find(v => v.lang.startsWith('zh-CN'))
+        || voices.find(v => v.lang.startsWith('zh'));
+    }
+  },
+
+  speak(text) {
+    // Strip markdown artifacts so JARVIS reads clean prose
+    text = text.replace(/```[\s\S]*?```/g, ' ').replace(/`[^`]+`/g, '')
+      .replace(/\*\*([^*]+)\*\*/g, '$1').replace(/__([^_]+)__/g, '$1')
+      .replace(/\*([^*]+)\*/g, '$1').replace(/_([^_]+)_/g, '$1')
+      .replace(/^#{1,6}\s+/gm, '').replace(/^[-*+]\s+/gm, '')
+      .replace(/^\d+\.\s+/gm, '').replace(/^>\s+/gm, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/[~|]/g, '')
+      .replace(/[\u{1F300}-\u{1FAF8}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '')
+      .replace(/\s{2,}/g, ' ').trim();
+    if (!text) { this._onEnd(); return; }
+    const utt = new SpeechSynthesisUtterance(text);
+    // JARVIS voice: calm, slightly low, measured pace
+    utt.pitch = lang === 'zh' ? 0.85 : 0.8;
+    utt.rate = lang === 'zh' ? 0.95 : 0.92;
+    utt.volume = 0.9;
+    utt.lang = lang === 'zh' ? 'zh-CN' : 'en-GB';
+    if (this.voice) utt.voice = this.voice;
+    utt.onend = () => this._onEnd();
+    utt.onerror = () => this._onEnd();
+    this.speaking = true;
+    speechSynthesis.speak(utt);
+  },
+
+  _onEnd() {
+    this.speaking = false;
+    this._sentenceCount++;
+    // If queue empty and closing, wrap up
+    if (this.queue.length === 0 && this._closing) {
+      this._closeComm();
+      return;
+    }
+    // Pause between sentences for natural breathing rhythm + blip SFX
+    if (this.queue.length > 0) {
+      if (window._imSfxCommBlip) window._imSfxCommBlip();
+      setTimeout(() => this.processQueue(), this._pauseMs);
+    } else {
+      this.processQueue();
+    }
+  },
+
+  feedChunk(txt) {
+    if (!this.enabled) return;
+    this.buffer += txt;
+    // Strip code blocks and inline code — JARVIS doesn't read code
+    let clean = this.buffer;
+    // Only strip complete fenced code blocks; leave incomplete ones in buffer
+    clean = clean.replace(/```[\s\S]*?```/g, ' ');
+    clean = clean.replace(/`[^`]*`/g, ' ');
+    // Split on sentence boundaries: .!? and Chinese 。！？ and newlines
+    const parts = clean.split(/(?<=[。！？.!?\n])\s*/);
+    if (parts.length > 1) {
+      // Merge short fragments into the previous sentence for natural flow
+      let merged = [];
+      for (let i = 0; i < parts.length - 1; i++) {
+        const s = parts[i].trim();
+        if (!s) continue;
+        if (s.length < 8 && merged.length > 0) {
+          // Too short to stand alone — append to previous
+          merged[merged.length - 1] += ' ' + s;
+        } else if (s.length > 1) {
+          merged.push(s);
+        }
+      }
+      for (const m of merged) this.queue.push(m);
+      // Keep remainder as buffer
+      const consumed = parts.slice(0, -1).join('').length;
+      this.buffer = this.buffer.slice(this.buffer.length - (clean.length - consumed));
+      this.processQueue();
+    }
+  },
+
+  processQueue() {
+    if (this.speaking || this.queue.length === 0) return;
+    if (this._firstOfRound) {
+      this._firstOfRound = false;
+      if (window._imSfxCommOpen) window._imSfxCommOpen();
+      if (window._imSfxCommNoise) window._imSfxCommNoise(true);
+      this._noiseOn = true;
+      // Delay first utterance slightly so comm-open sound plays first
+      setTimeout(() => {
+        if (this.queue.length > 0 && !this.speaking) {
+          this.speak(this.queue.shift());
+        }
+      }, 350);
+      return;
+    }
+    this.speak(this.queue.shift());
+  },
+
+  flush() {
+    if (!this.enabled) return;
+    // Clean code blocks from remaining buffer
+    let clean = this.buffer.replace(/```[\s\S]*?```/g, ' ').replace(/`[^`]*`/g, ' ').trim();
+    // Strip markdown artifacts that sound bad when read aloud
+    clean = clean.replace(/[#*_~>\[\]()]/g, '').replace(/\s{2,}/g, ' ').trim();
+    if (clean.length > 1) this.queue.push(clean);
+    this.buffer = '';
+    this._closing = true;
+    this.processQueue();
+    if (this.queue.length === 0 && !this.speaking) this._closeComm();
+  },
+
+  _closeComm() {
+    if (this._noiseOn) {
+      if (window._imSfxCommNoise) window._imSfxCommNoise(false);
+      this._noiseOn = false;
+    }
+    // Slight delay before close sound so it doesn't overlap last word
+    setTimeout(() => {
+      if (window._imSfxCommClose) window._imSfxCommClose();
+    }, 200);
+    this._closing = false;
+  },
+
+  stop() {
+    speechSynthesis.cancel();
+    this.queue = [];
+    this.buffer = '';
+    this.speaking = false;
+    this._firstOfRound = false;
+    this._closing = false;
+    this._sentenceCount = 0;
+    if (this._noiseOn) {
+      if (window._imSfxCommNoise) window._imSfxCommNoise(false);
+      this._noiseOn = false;
+    }
+  },
+
+  toggle() {
+    this.enabled = !this.enabled;
+    localStorage.setItem('jarvis-tts', this.enabled ? 'on' : 'off');
+    if (!this.enabled) this.stop();
+    this._updateUI();
+  },
+
+  _updateUI() {
+    const btn = document.getElementById('tts-btn');
+    const lbl = document.getElementById('tts-label');
+    if (btn) btn.classList.toggle('off', !this.enabled);
+    if (lbl) lbl.textContent = this.enabled ? t('ttsOn') : t('ttsOff');
+  },
+
+  startRound() {
+    if (!this.enabled) return;
+    this.buffer = '';
+    this.queue = [];
+    this._firstOfRound = true;
+    this._closing = false;
+    this._sentenceCount = 0;
+  }
+};
+
+// Init voices (may be async)
+if (speechSynthesis.getVoices().length) JarvisTTS.init();
+speechSynthesis.addEventListener('voiceschanged', () => JarvisTTS.init());
+JarvisTTS._updateUI();
+window.JarvisTTS = JarvisTTS;
 
 // ── Init ──
 connect();
@@ -2984,6 +3441,117 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 600;
       osc.connect(lp); lp.connect(gain); gain.connect(ctx.destination); osc.start(now); osc.stop(now + 0.3);
+    },
+
+    // Comm channel open — multi-layer sci-fi activation
+    commOpen() {
+      const ctx = getAudio(); const now = ctx.currentTime;
+      // Layer 1: filtered noise sweep (radio static powering up)
+      const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+      const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+      const noise = ctx.createBufferSource(); noise.buffer = buf;
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.setValueAtTime(1000, now); hp.frequency.exponentialRampToValueAtTime(4000, now + 0.2);
+      const nGain = ctx.createGain(); nGain.gain.setValueAtTime(0.07, now); nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      noise.connect(hp); hp.connect(nGain); nGain.connect(ctx.destination); noise.start(now); noise.stop(now + 0.3);
+      // Layer 2: ascending harmonic pair (sci-fi boot tone)
+      [600, 900].forEach((base, i) => {
+        const osc = ctx.createOscillator(); const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(base, now + i * 0.08);
+        osc.frequency.exponentialRampToValueAtTime(base * 1.5, now + i * 0.08 + 0.15);
+        g.gain.setValueAtTime(0, now + i * 0.08);
+        g.gain.linearRampToValueAtTime(0.06, now + i * 0.08 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.2);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.2);
+      });
+      // Layer 3: confirmation ping (like JARVIS acknowledging)
+      const ping = ctx.createOscillator(); const pGain = ctx.createGain();
+      ping.type = 'sine'; ping.frequency.value = 1400;
+      pGain.gain.setValueAtTime(0, now + 0.22);
+      pGain.gain.linearRampToValueAtTime(0.05, now + 0.24);
+      pGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      ping.connect(pGain); pGain.connect(ctx.destination);
+      ping.start(now + 0.22); ping.stop(now + 0.4);
+    },
+
+    // Comm channel close — descending deactivation sequence
+    commClose() {
+      const ctx = getAudio(); const now = ctx.currentTime;
+      // Descending dual tone (channel powering down)
+      [800, 500].forEach((freq, i) => {
+        const osc = ctx.createOscillator(); const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.5, now + i * 0.1 + 0.2);
+        g.gain.setValueAtTime(0.05, now + i * 0.1);
+        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.25);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(now + i * 0.1); osc.stop(now + i * 0.1 + 0.25);
+      });
+      // Noise tail (static fade)
+      const buf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+      const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+      const noise = ctx.createBufferSource(); noise.buffer = buf;
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2000;
+      const nGain = ctx.createGain(); nGain.gain.setValueAtTime(0.04, now + 0.15); nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      noise.connect(hp); hp.connect(nGain); nGain.connect(ctx.destination); noise.start(now + 0.15); noise.stop(now + 0.35);
+    },
+
+    // Continuous comm channel atmosphere — noise + carrier tone + periodic digital artifacts
+    commNoise(start) {
+      if (start) {
+        if (this._commNoiseNode) return;
+        const ctx = getAudio();
+        // Noise layer (radio static)
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+        const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const noise = ctx.createBufferSource(); noise.buffer = buf; noise.loop = true;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 1.2;
+        const nGain = ctx.createGain(); nGain.gain.value = 0.006;
+        noise.connect(bp); bp.connect(nGain); nGain.connect(ctx.destination); noise.start();
+        // Carrier tone (subtle digital hum, like an open comm line)
+        const carrier = ctx.createOscillator(); const cGain = ctx.createGain();
+        carrier.type = 'sine'; carrier.frequency.value = 60;
+        cGain.gain.value = 0.012;
+        carrier.connect(cGain); cGain.connect(ctx.destination); carrier.start();
+        // High-freq shimmer (very subtle, gives "digital processing" feel)
+        const shimmer = ctx.createOscillator(); const sGain = ctx.createGain();
+        shimmer.type = 'sine'; shimmer.frequency.value = 3800;
+        sGain.gain.value = 0.003;
+        shimmer.connect(sGain); sGain.connect(ctx.destination); shimmer.start();
+        this._commNoiseNode = noise; this._commNoiseGain = nGain;
+        this._commCarrier = carrier; this._commCarrierGain = cGain;
+        this._commShimmer = shimmer; this._commShimmerGain = sGain;
+      } else {
+        const ctx = getAudio(); const now = ctx.currentTime;
+        const fadeOut = (gainNode, srcNode) => {
+          if (!gainNode || !srcNode) return;
+          try {
+            gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+            setTimeout(() => { try { srcNode.stop(); } catch(e){} }, 450);
+          } catch(e){}
+        };
+        fadeOut(this._commNoiseGain, this._commNoiseNode);
+        fadeOut(this._commCarrierGain, this._commCarrier);
+        fadeOut(this._commShimmerGain, this._commShimmer);
+        this._commNoiseNode = null; this._commNoiseGain = null;
+        this._commCarrier = null; this._commCarrierGain = null;
+        this._commShimmer = null; this._commShimmerGain = null;
+      }
+    },
+
+    // Sentence transition blip — tiny digital pulse between JARVIS utterances
+    commBlip() {
+      const ctx = getAudio(); const now = ctx.currentTime;
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = 1800;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.03, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.06);
     },
   };
 
@@ -3401,6 +3969,10 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   window._imSfxToolCall = () => { SFX.toolCall(); };
   window._imSfxDone = () => { SFX.done(); };
   window._imSfxConnect = () => { SFX.connect(); };
+  window._imSfxCommOpen = () => { SFX.commOpen(); };
+  window._imSfxCommClose = () => { SFX.commClose(); };
+  window._imSfxCommNoise = (on) => { SFX.commNoise(on); };
+  window._imSfxCommBlip = () => { SFX.commBlip(); };
 })();
 </script>
 
