@@ -571,6 +571,21 @@ const server = http.createServer(async (req, res) => {
       jsonRes(res, 500, { ok: false, message: e.message });
     }
 
+  // ── Pairing Approve ──
+  } else if (req.url === '/api/pairing/approve' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const { channel, code } = body;
+    if (!channel || !code) { jsonRes(res, 400, { ok: false, message: 'Missing channel or code' }); return; }
+    console.log('[jarvis] pairing approve:', channel, code);
+    try {
+      const out = await runCli(['pairing', 'approve', channel, code], 15000);
+      console.log('[jarvis] pairing approve OK');
+      jsonRes(res, 200, { ok: true, message: 'Pairing approved', output: out.slice(0, 500) });
+    } catch (e) {
+      console.log('[jarvis] pairing approve failed:', e.message);
+      jsonRes(res, 500, { ok: false, message: e.message });
+    }
+
   // ── Doctor ──
   } else if (req.url === '/api/doctor' && req.method === 'POST') {
     console.log('[jarvis] running doctor…');

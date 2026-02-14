@@ -2230,7 +2230,16 @@ function renderChannelList($body) {
         }
       }
       html += '<button class="auth-btn" style="color:var(--red);border-color:rgba(204,34,51,0.3)" onclick="removeChannel(\'' + esc(chId) + '\')">' + t('chRemove') + '</button>';
-      html += '</div></div>';
+      html += '</div>';
+      // Pairing code input for channels that are configured but not connected
+      if ((channels[chId] || enabledPlugins[chId]) && !h.connected && !h.linked) {
+        html += '<div style="margin-top:8px;display:flex;gap:6px;align-items:center">';
+        html += '<input type="text" id="pairing-' + esc(chId) + '" class="ch-cfg-input" placeholder="' + t('chPairingHint') + '" style="flex:1;font-size:11px">';
+        html += '<button class="auth-btn" onclick="approvePairing(\'' + esc(chId) + '\')">' + t('chPairingApprove') + '</button>';
+        html += '</div>';
+        html += '<div id="pairing-msg-' + esc(chId) + '" style="margin-top:4px"></div>';
+      }
+      html += '</div>';
     }
   }
   html += '<div style="margin-top:16px;text-align:center">';
@@ -2512,6 +2521,28 @@ async function removeChannel(chId) {
     if (data.ok) { loadChannelList(); }
     else { alert(data.message); }
   } catch (e) { alert(e.message); }
+}
+
+async function approvePairing(chId) {
+  const input = document.getElementById('pairing-' + chId);
+  const code = input?.value.trim();
+  if (!code) return;
+  const $msg = document.getElementById('pairing-msg-' + chId);
+  $msg.innerHTML = '<div class="auth-msg ok">' + t('saving') + '...</div>';
+  try {
+    const res = await fetch('/api/pairing/approve', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channel: chId, code })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      $msg.innerHTML = '<div class="auth-msg ok">' + t('chPairingOk') + '</div>';
+      input.value = '';
+      setTimeout(() => loadChannelList(), 1500);
+    } else {
+      $msg.innerHTML = '<div class="auth-msg err">' + esc(data.message) + '</div>';
+    }
+  } catch (e) { $msg.innerHTML = '<div class="auth-msg err">' + esc(e.message) + '</div>'; }
 }
 
 // Channel Config View
@@ -2935,6 +2966,9 @@ const i18n = {
     chMissingFields: 'Please fill in all required fields.',
     chAddSuccess: 'Channel added successfully!',
     chRemoveConfirm: 'Remove channel {ch}? This will delete its configuration.',
+    chPairingHint: 'Pairing code…',
+    chPairingApprove: 'APPROVE',
+    chPairingOk: 'Pairing approved!',
     chConfigSaved: 'Configuration saved!',
     chDmPolicy: 'DM POLICY', chGroupPolicy: 'GROUP POLICY',
     chSelfChat: 'SELF-CHAT', chAllowFrom: 'ALLOW FROM',
@@ -3023,6 +3057,9 @@ const i18n = {
     chMissingFields: '请填写所有必填字段。',
     chAddSuccess: '频道添加成功！',
     chRemoveConfirm: '确定移除频道 {ch}？将删除其配置。',
+    chPairingHint: '配对码…',
+    chPairingApprove: '审批',
+    chPairingOk: '配对成功！',
     chConfigSaved: '配置已保存！',
     chDmPolicy: '私聊策略', chGroupPolicy: '群聊策略',
     chSelfChat: '自聊模式', chAllowFrom: '允许来源',
