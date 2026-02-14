@@ -24,12 +24,21 @@ try {
 }
 
 const PORT = parseInt(process.argv[2]) || 3000;
-const GW_WS = 'ws://127.0.0.1:18789';
-const GW_TOKEN = 'e4b674e9b414e20712d9c5361012d384611a383d55b068fc';
 const HTML_PATH = path.join(__dirname, 'index.html');
 const CONFIG_PATH = path.join(os.homedir(), '.openclaw/openclaw.json');
 const AUTH_PROFILES_PATH = path.join(os.homedir(), '.openclaw/agents/main/agent/auth-profiles.json');
-const GW_PORT = 18789;
+
+// Read gateway config dynamically from openclaw.json
+function getGatewayConfig() {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    const gw = cfg.gateway || {};
+    const port = gw.port || 18789;
+    const token = gw.auth?.token || '';
+    return { port, token, ws: 'ws://127.0.0.1:' + port };
+  } catch { return { port: 18789, token: '', ws: 'ws://127.0.0.1:18789' }; }
+}
+const GW_PORT = getGatewayConfig().port;
 
 // Resolve openclaw binary path
 const nvmBin = path.join(os.homedir(), '.nvm/versions/node');
@@ -676,7 +685,8 @@ const wss = WS ? new WS.WebSocketServer({ server, path: '/ws' }) : null;
 if (wss) wss.on('connection', (browser) => {
   console.log('[jarvis] 浏览器已连接');
 
-  const gw = new WS(GW_WS);
+  const gwCfg = getGatewayConfig();
+  const gw = new WS(gwCfg.ws);
   let gwReady = false;
   let authenticated = false;
   const queue = [];
@@ -711,7 +721,7 @@ if (wss) wss.on('connection', (browser) => {
           role: 'operator',
           scopes: ['operator.admin', 'operator.read', 'operator.write'],
           caps: ['tool-events'],
-          auth: { token: GW_TOKEN }
+          auth: { token: gwCfg.token }
         }
       };
       gw.send(JSON.stringify(connectMsg));
