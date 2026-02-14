@@ -268,11 +268,22 @@ const server = http.createServer(async (req, res) => {
     const { profileId, token } = body;
     if (!profileId || !token) { jsonRes(res, 400, { ok: false, message: '缺少 profileId 或 token' }); return; }
     try {
-      const profiles = JSON.parse(fs.readFileSync(AUTH_PROFILES_PATH, 'utf8'));
-      if (!profiles.profiles[profileId]) { jsonRes(res, 400, { ok: false, message: '未找到配置 ' + profileId }); return; }
+      // Ensure directory exists
+      const authDir = path.dirname(AUTH_PROFILES_PATH);
+      if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true });
+      // Read existing or create new
+      let profiles;
+      try { profiles = JSON.parse(fs.readFileSync(AUTH_PROFILES_PATH, 'utf8')); } catch { profiles = { profiles: {}, usageStats: {} }; }
+      if (!profiles.profiles) profiles.profiles = {};
+      // Auto-create profile if missing
+      if (!profiles.profiles[profileId]) {
+        const [provider] = profileId.split(':');
+        profiles.profiles[profileId] = { provider, token: '', createdAt: new Date().toISOString() };
+      }
       profiles.profiles[profileId].token = token;
       // Reset error stats
-      if (profiles.usageStats?.[profileId]) {
+      if (!profiles.usageStats) profiles.usageStats = {};
+      if (profiles.usageStats[profileId]) {
         profiles.usageStats[profileId].errorCount = 0;
         profiles.usageStats[profileId].lastFailureAt = null;
       }
