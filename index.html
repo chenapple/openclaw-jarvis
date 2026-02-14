@@ -2126,7 +2126,7 @@ const CHANNELS = [
   { id: 'googlechat', label: 'Google Chat', tier: 2, auth: 'complex', fields: ['webhook'], icon: '💚', hint_en: 'Webhook URL', hint_zh: 'Webhook 地址' },
   { id: 'msteams', label: 'MS Teams', tier: 2, auth: 'plugin', icon: '🟣', hint_en: 'Enable plugin', hint_zh: '启用插件' },
   { id: 'matrix', label: 'Matrix', tier: 2, auth: 'complex', fields: ['host','username','password'], icon: '🟩', hint_en: 'Homeserver + login', hint_zh: '服务器 + 登录' },
-  { id: 'feishu', label: 'Feishu', tier: 2, auth: 'plugin', icon: '🐦', hint_en: 'Enable plugin', hint_zh: '启用插件' },
+  { id: 'feishu', label: 'Feishu', tier: 2, auth: 'feishu', fields: ['appId','appSecret'], icon: '🐦', hint_en: 'App ID + Secret', hint_zh: 'App ID + Secret' },
   { id: 'line', label: 'LINE', tier: 2, auth: 'token', fields: ['token'], icon: '🟢', hint_en: 'Channel access token', hint_zh: '频道 Token' },
   { id: 'nostr', label: 'Nostr', tier: 3, auth: 'plugin', icon: '🔮', hint_en: 'Enable plugin', hint_zh: '启用插件' },
   { id: 'mattermost', label: 'Mattermost', tier: 3, auth: 'plugin', icon: '🔵', hint_en: 'Enable plugin', hint_zh: '启用插件' },
@@ -2438,6 +2438,22 @@ function renderChannelCredentials($body) {
       html += '<div class="auth-token-input"><input type="' + inputType + '" id="ch-add-' + field + '" placeholder="' + esc(label) + '…"></div>';
     }
     html += '<div style="margin-top:12px;text-align:right"><button class="auth-btn" onclick="submitChannelAdd()">' + t('saveToken') + '</button></div>';
+  } else if (ch.auth === 'feishu') {
+    // Feishu — install plugin + App ID / Secret
+    html += '<div style="margin-top:10px;font-size:12px;color:var(--text2)">' + t('chFeishuStep1') + '</div>';
+    html += '<div style="margin:8px 0;display:flex;align-items:center;gap:6px">';
+    html += '<code style="flex:1;background:rgba(212,164,78,0.08);padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--cyan);user-select:all">openclaw plugins install @openclaw/feishu</code>';
+    html += '<button class="auth-btn" onclick="navigator.clipboard.writeText(\'openclaw plugins install @openclaw/feishu\');this.textContent=\'' + t('wzCopied') + '\';setTimeout(()=>this.textContent=\'' + t('wzCopy') + '\',1500)">' + t('wzCopy') + '</button>';
+    html += '</div>';
+    html += '<div style="margin-top:14px;font-size:12px;color:var(--text2)">' + t('chFeishuStep2') + '</div>';
+    html += '<div style="margin-top:10px;font-size:11px;color:var(--text3);font-family:var(--hud);letter-spacing:1px;margin-bottom:6px">APP ID</div>';
+    html += '<div class="auth-token-input"><input type="text" id="ch-add-appId" placeholder="cli_xxxxxxxxxx"></div>';
+    html += '<div style="margin-top:10px;font-size:11px;color:var(--text3);font-family:var(--hud);letter-spacing:1px;margin-bottom:6px">APP SECRET</div>';
+    html += '<div class="auth-token-input"><input type="password" id="ch-add-appSecret" placeholder="App Secret…"></div>';
+    html += '<div style="margin-top:12px;text-align:right"><button class="auth-btn setup" onclick="submitChannelAdd()">' + t('saveToken') + '</button></div>';
+    html += '<div style="margin-top:14px;padding:10px 12px;background:rgba(212,164,78,0.04);border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--text3)">';
+    html += t('chFeishuStep3');
+    html += '</div>';
   } else if (ch.auth === 'plugin') {
     // Plugin — just enable
     html += '<div style="margin-top:10px;font-size:12px;color:var(--text2)">' + t('chPluginDesc') + '</div>';
@@ -2457,7 +2473,7 @@ async function submitChannelAdd() {
   if (ch.auth === 'token') {
     body.token = document.getElementById('ch-add-token')?.value.trim();
     if (!body.token) { $msg.innerHTML = '<div class="auth-msg err">' + t('chMissingFields') + '</div>'; return; }
-  } else if (ch.auth === 'dual-token' || ch.auth === 'complex') {
+  } else if (ch.auth === 'feishu' || ch.auth === 'dual-token' || ch.auth === 'complex') {
     for (const field of (ch.fields || [])) {
       const val = document.getElementById('ch-add-' + field)?.value.trim();
       if (!val) { $msg.innerHTML = '<div class="auth-msg err">' + t('chMissingFields') + '</div>'; return; }
@@ -2912,6 +2928,9 @@ const i18n = {
     chTokenLabel: 'TOKEN', chTokenHint: 'Paste token here…',
     chPluginDesc: 'This channel works as a plugin. Click Enable to add it.',
     chEnable: 'ENABLE',
+    chFeishuStep1: '① Install the Feishu plugin first (run in terminal):',
+    chFeishuStep2: '② Create an app on Feishu Open Platform, then fill in:',
+    chFeishuStep3: '③ After saving, restart gateway. Send a message to the bot in Feishu, approve the pairing code with: openclaw pairing approve feishu <CODE>',
     chMissingFields: 'Please fill in all required fields.',
     chAddSuccess: 'Channel added successfully!',
     chRemoveConfirm: 'Remove channel {ch}? This will delete its configuration.',
@@ -2997,6 +3016,9 @@ const i18n = {
     chTokenLabel: 'TOKEN', chTokenHint: '在此粘贴 Token…',
     chPluginDesc: '该频道以插件形式工作。点击「启用」添加。',
     chEnable: '启用',
+    chFeishuStep1: '① 先在终端安装飞书插件：',
+    chFeishuStep2: '② 在飞书开放平台创建应用，然后填写：',
+    chFeishuStep3: '③ 保存后重启 Gateway。在飞书给机器人发消息，收到配对码后在终端运行：openclaw pairing approve feishu <配对码>',
     chMissingFields: '请填写所有必填字段。',
     chAddSuccess: '频道添加成功！',
     chRemoveConfirm: '确定移除频道 {ch}？将删除其配置。',
