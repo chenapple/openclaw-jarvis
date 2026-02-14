@@ -72,6 +72,11 @@ else
   echo "  ✓ JARVIS cloned"
 fi
 
+# Install dependencies (ws module)
+echo "  → Installing dependencies..."
+cd "$JARVIS_DIR" && npm install --production 2>/dev/null
+echo "  ✓ Dependencies installed"
+
 # ── Step 4: Shell alias ──
 SHELL_RC=""
 if [ -f "$HOME/.zshrc" ]; then
