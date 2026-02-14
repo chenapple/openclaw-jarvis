@@ -668,7 +668,7 @@ body::after{
 .settings-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);text-shadow:0 0 8px rgba(212,164,78,0.3)}
 
 /* ── Channel List ── */
-.channel-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);margin-bottom:8px;transition:all 0.2s}
+.channel-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);margin-bottom:8px;transition:all 0.2s;flex-wrap:wrap}
 .channel-item:hover{border-color:var(--border2)}
 .channel-icon{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(212,164,78,0.04);border:1px solid rgba(212,164,78,0.1);font-size:16px}
 .channel-info{flex:1;min-width:0}
@@ -2233,11 +2233,11 @@ function renderChannelList($body) {
       html += '</div>';
       // Pairing code input for channels that are configured but not connected
       if ((channels[chId] || enabledPlugins[chId]) && !h.connected && !h.linked) {
-        html += '<div style="margin-top:8px;display:flex;gap:6px;align-items:center">';
+        html += '<div style="width:100%;display:flex;gap:6px;align-items:center;margin-top:4px;padding-left:48px">';
         html += '<input type="text" id="pairing-' + esc(chId) + '" class="ch-cfg-input" placeholder="' + t('chPairingHint') + '" style="flex:1;font-size:11px">';
         html += '<button class="auth-btn" onclick="approvePairing(\'' + esc(chId) + '\')">' + t('chPairingApprove') + '</button>';
         html += '</div>';
-        html += '<div id="pairing-msg-' + esc(chId) + '" style="margin-top:4px"></div>';
+        html += '<div id="pairing-msg-' + esc(chId) + '" style="width:100%;padding-left:48px"></div>';
       }
       html += '</div>';
     }
