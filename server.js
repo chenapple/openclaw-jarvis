@@ -277,26 +277,36 @@ const server = http.createServer(async (req, res) => {
     const { profileId, token } = body;
     if (!profileId || !token) { jsonRes(res, 400, { ok: false, message: '缺少 profileId 或 token' }); return; }
     try {
-      // Ensure directory exists
+      const [provider] = profileId.split(':');
+      // ── 1. Write auth-profiles.json ──
       const authDir = path.dirname(AUTH_PROFILES_PATH);
       if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true });
-      // Read existing or create new
       let profiles;
-      try { profiles = JSON.parse(fs.readFileSync(AUTH_PROFILES_PATH, 'utf8')); } catch { profiles = { profiles: {}, usageStats: {} }; }
+      try { profiles = JSON.parse(fs.readFileSync(AUTH_PROFILES_PATH, 'utf8')); } catch { profiles = {}; }
+      if (!profiles.version) profiles.version = 1;
       if (!profiles.profiles) profiles.profiles = {};
-      // Auto-create profile if missing
-      if (!profiles.profiles[profileId]) {
-        const [provider] = profileId.split(':');
-        profiles.profiles[profileId] = { provider, token: '', createdAt: new Date().toISOString() };
-      }
-      profiles.profiles[profileId].token = token;
-      // Reset error stats
+      if (!profiles.lastGood) profiles.lastGood = {};
       if (!profiles.usageStats) profiles.usageStats = {};
+      // Create or update profile with correct format
+      profiles.profiles[profileId] = { type: 'token', provider, token };
+      profiles.lastGood[provider] = profileId;
+      // Reset error stats
       if (profiles.usageStats[profileId]) {
         profiles.usageStats[profileId].errorCount = 0;
         profiles.usageStats[profileId].lastFailureAt = null;
       }
       fs.writeFileSync(AUTH_PROFILES_PATH, JSON.stringify(profiles, null, 2), 'utf8');
+      // ── 2. Register profile in openclaw.json ──
+      try {
+        let cfg;
+        try { cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch { cfg = {}; }
+        if (!cfg.agents) cfg.agents = {};
+        if (!cfg.agents.defaults) cfg.agents.defaults = {};
+        if (!cfg.agents.defaults.auth) cfg.agents.defaults.auth = {};
+        if (!cfg.agents.defaults.auth.profiles) cfg.agents.defaults.auth.profiles = {};
+        cfg.agents.defaults.auth.profiles[profileId] = { provider, mode: 'token' };
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
+      } catch (cfgErr) { console.log('[jarvis] openclaw.json auth registration failed:', cfgErr.message); }
       console.log('[jarvis] Token 已更新: ' + profileId);
       jsonRes(res, 200, { ok: true, message: 'Token 已更新' });
     } catch (e) {
