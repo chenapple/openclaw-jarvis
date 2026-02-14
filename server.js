@@ -606,6 +606,10 @@ const server = http.createServer(async (req, res) => {
         if (!cfg.channels.feishu) cfg.channels.feishu = {};
         cfg.channels.feishu.appId = body.appId;
         cfg.channels.feishu.appSecret = body.appSecret;
+        if (!cfg.plugins) cfg.plugins = {};
+        if (!cfg.plugins.entries) cfg.plugins.entries = {};
+        if (!cfg.plugins.entries.feishu) cfg.plugins.entries.feishu = {};
+        cfg.plugins.entries.feishu.enabled = true;
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
         console.log('[jarvis] feishu credentials saved');
         jsonRes(res, 200, { ok: true, message: 'Feishu configured. Restart gateway to apply.' });
@@ -649,6 +653,7 @@ const server = http.createServer(async (req, res) => {
         let cfg;
         try { cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch { cfg = {}; }
         if (cfg.channels?.feishu) delete cfg.channels.feishu;
+        if (cfg.plugins?.entries?.feishu) cfg.plugins.entries.feishu.enabled = false;
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
         console.log('[jarvis] feishu channel removed');
         jsonRes(res, 200, { ok: true, message: 'Feishu removed' });
