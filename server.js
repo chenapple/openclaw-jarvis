@@ -642,6 +642,23 @@ const server = http.createServer(async (req, res) => {
     const body = await parseBody(req);
     const ch = body.channel;
     if (!ch) { jsonRes(res, 400, { ok: false, message: 'Missing channel' }); return; }
+
+    // Feishu: remove from config file directly
+    if (ch === 'feishu') {
+      try {
+        let cfg;
+        try { cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch { cfg = {}; }
+        if (cfg.channels?.feishu) delete cfg.channels.feishu;
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
+        console.log('[jarvis] feishu channel removed');
+        jsonRes(res, 200, { ok: true, message: 'Feishu removed' });
+      } catch (e) {
+        console.log('[jarvis] feishu remove failed:', e.message);
+        jsonRes(res, 500, { ok: false, message: e.message });
+      }
+      return;
+    }
+
     const args = ['channels', 'remove', '--channel', ch, '--delete'];
     if (body.account) args.push('--account', body.account);
     console.log('[jarvis] channels remove:', args.join(' '));
