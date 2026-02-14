@@ -101,10 +101,16 @@ if [ "$NEED_DOCTOR" = true ]; then
   echo ""
   echo "  ┌──────────────────────────────────────┐"
   echo "  │  First-time OpenClaw setup            │"
-  echo "  │  Please follow the prompts below      │"
-  echo "  │  to configure API keys and models.    │"
   echo "  └──────────────────────────────────────┘"
   echo ""
+  # Initialize config
+  $OPENCLAW_BIN setup || true
+  # Configure gateway
+  $OPENCLAW_BIN config set gateway.mode local 2>/dev/null || true
+  GW_TOKEN=$(openssl rand -hex 24)
+  $OPENCLAW_BIN config set gateway.auth.token "$GW_TOKEN" 2>/dev/null || true
+  echo "  ✓ Gateway configured (mode=local, token=auto)"
+  # Run doctor
   $OPENCLAW_BIN doctor || true
 fi
 
