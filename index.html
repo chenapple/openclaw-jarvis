@@ -2198,7 +2198,8 @@ function renderChannelView() {
 function renderChannelList($body) {
   const channels = channelListData?.channels || {};
   const plugins = channelListData?.plugins?.entries || {};
-  const configured = Object.keys({ ...channels, ...plugins });
+  const enabledPlugins = Object.fromEntries(Object.entries(plugins).filter(([,v]) => v?.enabled));
+  const configured = Object.keys({ ...channels, ...enabledPlugins });
   const health = healthData.channels || {};
 
   let html = '';
