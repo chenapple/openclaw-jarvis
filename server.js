@@ -624,7 +624,7 @@ const server = http.createServer(async (req, res) => {
       const channelCfg = cfg.channels?.[ch] || {};
       const pluginCfg = cfg.plugins?.entries?.[ch] || {};
       jsonRes(res, 200, { channel: ch, config: channelCfg, plugin: pluginCfg });
-    } catch (e) { jsonRes(res, 500, { error: e.message }); }
+    } catch (e) { jsonRes(res, 200, { channel: ch, config: {}, plugin: {} }); }
 
   } else if (req.url === '/api/channels/config' && req.method === 'POST') {
     const body = await parseBody(req);
@@ -632,8 +632,10 @@ const server = http.createServer(async (req, res) => {
     const config = body.config;
     if (!ch || !config) { jsonRes(res, 400, { ok: false, message: 'Missing channel or config' }); return; }
     try {
-      const raw = fs.readFileSync(CONFIG_PATH, 'utf8');
-      const cfg = JSON.parse(raw);
+      const cfgDir = path.dirname(CONFIG_PATH);
+      if (!fs.existsSync(cfgDir)) fs.mkdirSync(cfgDir, { recursive: true });
+      let cfg;
+      try { cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch { cfg = {}; }
       if (!cfg.channels) cfg.channels = {};
       cfg.channels[ch] = { ...(cfg.channels[ch] || {}), ...config };
       fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
