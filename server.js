@@ -596,13 +596,33 @@ const server = http.createServer(async (req, res) => {
     const body = await parseBody(req);
     const ch = body.channel;
     if (!ch) { jsonRes(res, 400, { ok: false, message: 'Missing channel' }); return; }
-    // Map camelCase fields to CLI flags
+
+    // Feishu: write appId/appSecret directly to config (no CLI flag support)
+    if (ch === 'feishu' && body.appId && body.appSecret) {
+      try {
+        let cfg;
+        try { cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch { cfg = {}; }
+        if (!cfg.channels) cfg.channels = {};
+        if (!cfg.channels.feishu) cfg.channels.feishu = {};
+        cfg.channels.feishu.appId = body.appId;
+        cfg.channels.feishu.appSecret = body.appSecret;
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
+        console.log('[jarvis] feishu credentials saved');
+        jsonRes(res, 200, { ok: true, message: 'Feishu configured. Restart gateway to apply.' });
+      } catch (e) {
+        console.log('[jarvis] feishu config failed:', e.message);
+        jsonRes(res, 500, { ok: false, message: e.message });
+      }
+      return;
+    }
+
+    // Other channels: use CLI flags
     const flagMap = {
       token: '--token', botToken: '--bot-token', appToken: '--app-token',
       account: '--account', signalNumber: '--signal-number',
       phoneNumber: '--phone-number', host: '--host', port: '--port',
       password: '--password', username: '--username', apiKey: '--api-key',
-      webhook: '--webhook', appId: '--app-id', appSecret: '--app-secret',
+      webhook: '--webhook',
     };
     const args = ['channels', 'add', '--channel', ch];
     for (const [key, flag] of Object.entries(flagMap)) {
