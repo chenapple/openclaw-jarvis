@@ -48,22 +48,21 @@ else
   echo "  ✓ OpenClaw installed."
 fi
 
-# ── Step 3: Create JARVIS directory ──
-mkdir -p "$JARVIS_DIR"
-echo "  → Downloading JARVIS files..."
-
-curl -fsSL "$REPO_URL/index.html" -o "$JARVIS_DIR/index.html"
-curl -fsSL "$REPO_URL/server.js" -o "$JARVIS_DIR/server.js"
-
-# Download 3D model (8.7MB) — show progress
-if [ ! -f "$JARVIS_DIR/v1_0_IronManRigged.glb" ]; then
-  echo "  → Downloading 3D model (8.7MB)..."
-  curl -fSL "$REPO_URL/v1_0_IronManRigged.glb" -o "$JARVIS_DIR/v1_0_IronManRigged.glb"
+# ── Step 3: Clone / Update JARVIS ──
+if [ -d "$JARVIS_DIR/.git" ]; then
+  echo "  → Updating JARVIS..."
+  git -C "$JARVIS_DIR" pull origin main
+  echo "  ✓ JARVIS updated"
 else
-  echo "  ✓ 3D model already exists, skipping."
+  mkdir -p "$(dirname "$JARVIS_DIR")"
+  if [ -d "$JARVIS_DIR" ]; then
+    mv "$JARVIS_DIR" "$JARVIS_DIR.bak.$(date +%s)"
+    echo "  → Existing directory backed up"
+  fi
+  echo "  → Cloning JARVIS..."
+  git clone https://github.com/chenapple/openclaw-jarvis.git "$JARVIS_DIR"
+  echo "  ✓ JARVIS cloned to $JARVIS_DIR"
 fi
-
-echo "  ✓ Files installed to $JARVIS_DIR"
 
 # ── Step 4: Add shell alias ──
 SHELL_RC=""
