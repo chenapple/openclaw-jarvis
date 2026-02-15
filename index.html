@@ -462,9 +462,11 @@ body::after{
 .agent-evt-status{font-weight:700;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;font-family:var(--hud)}
 .agent-evt-detail{font-size:11px;color:var(--text3);margin-top:4px;padding-left:4px;white-space:pre-wrap;max-height:60px;overflow:hidden;font-family:var(--mono)}
 
-/* ── Event Log ── */
-#log-panel{grid-column:1/2;grid-row:4/5;min-height:0;width:calc(50% - 5px)}
-#log-panel .panel-body{font-size:12px;padding:6px 18px}
+/* ── Left-bottom stack (sys + log) ── */
+#left-stack{grid-column:1/2;grid-row:4/5;width:calc(50% - 5px);min-height:0;display:flex;flex-direction:column;gap:10px;z-index:2}
+#sys-panel{flex-shrink:0}
+#log-panel{min-height:0;flex:1;display:flex;flex-direction:column}
+#log-panel .panel-body{font-size:12px;padding:6px 18px;flex:1;overflow-y:auto}
 .log-entry{display:flex;gap:10px;padding:2px 0;animation:logFade 0.2s ease-out}
 @keyframes logFade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .log-ts{color:var(--text3);flex-shrink:0;width:68px;font-family:var(--mono);font-size:10px}
@@ -812,6 +814,21 @@ body::after{
 /* ── Gauge pulse ── */
 @keyframes hgPulse{0%,100%{filter:drop-shadow(0 0 3px rgba(0,229,255,.4))}50%{filter:drop-shadow(0 0 8px rgba(0,229,255,.7))}}
 .hg-fill.pulse{animation:hgPulse 2.5s ease-in-out infinite}
+
+/* ── System Diagnostics Panel ── */
+.sh-body{padding:10px 14px !important}
+.sh-info-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.sh-host{font-size:10px;color:rgba(0,229,255,0.5);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-uptime-badge{font-size:9px;color:var(--text3);font-family:var(--hud);letter-spacing:1px;flex-shrink:0;padding-left:10px}
+.sh-cpu-name{font-size:9px;color:rgba(232,220,200,0.3);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-meters{display:flex;flex-direction:column;gap:6px}
+.sh-meter{display:flex;align-items:center;font-size:10px}
+.sh-label{color:rgba(232,220,200,0.45);letter-spacing:1px;flex-shrink:0;min-width:42px;font-family:var(--hud)}
+.sh-val{color:rgba(232,220,200,0.8);text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;flex-shrink:0;min-width:110px}
+.sh-bar-wrap{flex:1;height:5px;background:rgba(0,229,255,0.08);margin:0 10px;border-radius:2px;overflow:hidden;min-width:60px}
+.sh-bar{height:100%;background:linear-gradient(90deg,rgba(0,229,255,0.4),rgba(0,229,255,0.7));border-radius:2px;transition:width 1s ease}
+.sh-bar.warn{background:linear-gradient(90deg,rgba(255,204,0,0.5),rgba(255,204,0,0.8))}
+.sh-bar.crit{background:linear-gradient(90deg,rgba(204,34,51,0.5),rgba(204,34,51,0.8))}
 </style>
 </head>
 <body>
@@ -940,6 +957,39 @@ body::after{
     </div>
   </div>
 
+  <div id="left-stack">
+  <!-- System Diagnostics Panel -->
+  <div class="panel" id="sys-panel">
+    <div class="panel-hdr">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+      SYSTEM DIAGNOSTICS
+    </div>
+    <div class="panel-body sh-body" id="sys-body">
+      <div class="sh-info-row">
+        <span class="sh-host" id="sh-host">—</span>
+        <span class="sh-uptime-badge" id="sh-uptime">—</span>
+      </div>
+      <div class="sh-cpu-name" id="sh-cpu">—</div>
+      <div class="sh-meters">
+        <div class="sh-meter">
+          <span class="sh-label" id="sh-lbl-cpu">CPU</span>
+          <div class="sh-bar-wrap"><div class="sh-bar" id="sh-cpu-bar" style="width:0%"></div></div>
+          <span class="sh-val" id="sh-cpu-val">—</span>
+        </div>
+        <div class="sh-meter">
+          <span class="sh-label" id="sh-lbl-mem">MEM</span>
+          <div class="sh-bar-wrap"><div class="sh-bar" id="sh-mem-bar" style="width:0%"></div></div>
+          <span class="sh-val" id="sh-mem-val">—</span>
+        </div>
+        <div class="sh-meter">
+          <span class="sh-label" id="sh-lbl-disk">DISK</span>
+          <div class="sh-bar-wrap"><div class="sh-bar" id="sh-disk-bar" style="width:0%"></div></div>
+          <span class="sh-val" id="sh-disk-val">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Event Log -->
   <div class="panel" id="log-panel">
     <div class="panel-hdr">
@@ -948,6 +998,7 @@ body::after{
     </div>
     <div class="panel-body" id="log-body"></div>
   </div>
+  </div><!-- /left-stack -->
 </div>
 
 <!-- Holographic HUD Overlay -->
@@ -1268,6 +1319,7 @@ function renderHeroPills() {
       const label = labels[ch] || ch;
       if (c.connected) html += `<span class="pill pill-green"><span class="pdot"></span>${esc(label)} ON</span>`;
       else if (c.linked) html += `<span class="pill pill-yellow"><span class="pdot"></span>${esc(label)} LINKED</span>`;
+      else if (c.running || c.probe?.ok) html += `<span class="pill pill-green"><span class="pdot"></span>${esc(label)} ON</span>`;
       else if (c.configured) html += `<span class="pill pill-red"><span class="pdot"></span>${esc(label)} OFF</span>`;
     }
     html += '</div>';
@@ -1699,6 +1751,53 @@ async function toggleGateway() {
 checkGatewayStatus();
 setInterval(checkGatewayStatus, 5000);
 setInterval(checkGatewayStatus, 10000);
+
+// ── System Monitor HUD ──
+function fmtBytes(b) {
+  const Ki = 1024, Mi = Ki * 1024, Gi = Mi * 1024, Ti = Gi * 1024;
+  if (b >= Ti) return (b / Ti).toFixed(1) + ' TB';
+  if (b >= Gi) return (b / Gi).toFixed(1) + ' GB';
+  if (b >= Mi) return (b / Mi).toFixed(0) + ' MB';
+  return (b / Ki).toFixed(0) + ' KB';
+}
+function fmtUptime(s) {
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+  if (d > 0) return d + 'd ' + h + 'h';
+  if (h > 0) return h + 'h ' + m + 'm';
+  return m + 'm';
+}
+function barClass(pct) { return pct >= 90 ? 'sh-bar crit' : pct >= 70 ? 'sh-bar warn' : 'sh-bar'; }
+
+async function fetchSystemInfo() {
+  try {
+    const r = await fetch('/api/system-info');
+    const d = await r.json();
+    document.getElementById('sh-host').textContent = d.hostname + ' · ' + d.platform + '/' + d.arch;
+    document.getElementById('sh-cpu').textContent = d.cpu.model + ' (' + d.cpu.cores + ' cores)';
+    // CPU — use load1 / cores as rough %
+    const cpuPct = Math.min(100, Math.round((d.cpu.load1 / d.cpu.cores) * 100));
+    const $cpuBar = document.getElementById('sh-cpu-bar');
+    $cpuBar.style.width = cpuPct + '%';
+    $cpuBar.className = barClass(cpuPct);
+    document.getElementById('sh-cpu-val').textContent = cpuPct + '%';
+    // Memory
+    const $memBar = document.getElementById('sh-mem-bar');
+    $memBar.style.width = d.memory.percent + '%';
+    $memBar.className = barClass(d.memory.percent);
+    document.getElementById('sh-mem-val').textContent = fmtBytes(d.memory.used) + '/' + fmtBytes(d.memory.total);
+    // Disk
+    if (d.disk) {
+      const $diskBar = document.getElementById('sh-disk-bar');
+      $diskBar.style.width = d.disk.percent + '%';
+      $diskBar.className = barClass(d.disk.percent);
+      document.getElementById('sh-disk-val').textContent = fmtBytes(d.disk.used) + '/' + fmtBytes(d.disk.total);
+    }
+    // Uptime
+    document.getElementById('sh-uptime').textContent = t('shUp') + ' ' + fmtUptime(d.uptime);
+  } catch {}
+}
+fetchSystemInfo();
+setInterval(fetchSystemInfo, 5000);
 
 // ── Fetch config (model info) ──
 async function fetchConfig() {
@@ -2213,6 +2312,7 @@ function renderChannelList($body) {
       let statusClass = 'offline', statusText = t('chOffline');
       if (h.connected) { statusClass = 'connected'; statusText = t('chConnected'); }
       else if (h.linked) { statusClass = 'linked'; statusText = t('chLinked'); }
+      else if (h.running || h.probe?.ok) { statusClass = 'connected'; statusText = t('chConnected'); }
       else if (channels[chId] || (plugins[chId]?.enabled)) { statusClass = 'enabled'; statusText = t('chEnabled'); }
 
       html += '<div class="channel-item">';
@@ -2232,7 +2332,7 @@ function renderChannelList($body) {
       html += '<button class="auth-btn" style="color:var(--red);border-color:rgba(204,34,51,0.3)" onclick="removeChannel(\'' + esc(chId) + '\')">' + t('chRemove') + '</button>';
       html += '</div>';
       // Pairing code input for channels that are configured but not connected
-      if ((channels[chId] || enabledPlugins[chId]) && !h.connected && !h.linked) {
+      if ((channels[chId] || enabledPlugins[chId]) && !h.connected && !h.linked && !h.running && !h.probe?.ok) {
         html += '<div style="width:100%;display:flex;gap:6px;align-items:center;margin-top:4px;padding-left:48px">';
         html += '<input type="text" id="pairing-' + esc(chId) + '" class="ch-cfg-input" placeholder="' + t('chPairingHint') + '" style="flex:1;font-size:11px">';
         html += '<button class="auth-btn" onclick="approvePairing(\'' + esc(chId) + '\')">' + t('chPairingApprove') + '</button>';
@@ -2909,7 +3009,8 @@ const i18n = {
     heroTitle: 'At your service, Sir.',
     sessions: 'SESSIONS', clients: 'CLIENTS', todayToken: 'TODAY TOKEN', totalCost: 'TOTAL COST',
     active: 'ACTIVE', awaiting: 'AWAITING LINK', loading: 'LOADING',
-    liveComm: 'LIVE COMM', systemLog: 'SYSTEM LOG',
+    liveComm: 'LIVE COMM', systemLog: 'SYSTEM LOG', sysDiag: 'SYSTEM DIAGNOSTICS',
+    shCpu: 'CPU', shMem: 'MEM', shDisk: 'DISK', shUp: 'UP',
     chatPlaceholder: 'ENTER COMMAND... (ENTER TO TRANSMIT)',
     send: 'SEND', noMessages: 'NO MESSAGES', historyFail: 'HISTORY LOAD FAILED',
     establishing: 'ESTABLISHING CONNECTION',
@@ -3000,7 +3101,8 @@ const i18n = {
     heroTitle: '先生，随时为您效劳',
     sessions: '会话数', clients: '客户端', todayToken: '今日用量', totalCost: '总费用',
     active: '活跃', awaiting: '等待连接', loading: '加载中',
-    liveComm: '实时通讯', systemLog: '系统日志',
+    liveComm: '实时通讯', systemLog: '系统日志', sysDiag: '系统诊断',
+    shCpu: '处理器', shMem: '内存', shDisk: '硬盘', shUp: '运行',
     chatPlaceholder: '输入指令… (回车发送)',
     send: '发送', noMessages: '暂无消息', historyFail: '历史加载失败',
     establishing: '正在建立连接',
@@ -3105,6 +3207,11 @@ function applyLang() {
     document.querySelector('#chat-panel .panel-hdr svg').outerHTML + ' ' + t('liveComm');
   document.querySelector('#log-panel .panel-hdr').innerHTML =
     document.querySelector('#log-panel .panel-hdr svg').outerHTML + ' ' + t('systemLog');
+  document.querySelector('#sys-panel .panel-hdr').innerHTML =
+    document.querySelector('#sys-panel .panel-hdr svg').outerHTML + ' ' + t('sysDiag');
+  document.getElementById('sh-lbl-cpu').textContent = t('shCpu');
+  document.getElementById('sh-lbl-mem').textContent = t('shMem');
+  document.getElementById('sh-lbl-disk').textContent = t('shDisk');
   // Chat
   $chatInput.placeholder = t('chatPlaceholder');
   $chatSend.textContent = t('send');

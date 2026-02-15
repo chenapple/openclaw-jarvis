@@ -586,6 +586,49 @@ const server = http.createServer(async (req, res) => {
       jsonRes(res, 500, { ok: false, message: e.message });
     }
 
+  // ── System Info ──
+  } else if (req.url === '/api/system-info') {
+    const cpus = os.cpus();
+    const totalMem = os.totalmem();
+    // os.freemem() matches macOS Activity Monitor / top "unused"
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const load = os.loadavg();
+    const info = {
+      hostname: os.hostname(),
+      platform: os.platform(),
+      arch: os.arch(),
+      osRelease: os.release(),
+      uptime: os.uptime(),
+      cpu: {
+        model: cpus[0]?.model?.trim() || 'Unknown',
+        cores: cpus.length,
+        load1: Math.round(load[0] * 100) / 100,
+        load5: Math.round(load[1] * 100) / 100,
+        load15: Math.round(load[2] * 100) / 100,
+      },
+      memory: {
+        total: totalMem,
+        used: usedMem,
+        free: freeMem,
+        percent: Math.round((usedMem / totalMem) * 1000) / 10,
+      },
+      disk: null,
+    };
+    // Get disk usage via df
+    try {
+      const dfOut = require('child_process').execFileSync('df', ['-k', '/'], { timeout: 3000, encoding: 'utf8' });
+      const lines = dfOut.trim().split('\n');
+      if (lines.length >= 2) {
+        const parts = lines[1].split(/\s+/);
+        const total = parseInt(parts[1]) * 1024;
+        const used = parseInt(parts[2]) * 1024;
+        const free = parseInt(parts[3]) * 1024;
+        info.disk = { total, used, free, percent: Math.round((used / total) * 1000) / 10 };
+      }
+    } catch {}
+    jsonRes(res, 200, info);
+
   // ── Doctor ──
   } else if (req.url === '/api/doctor' && req.method === 'POST') {
     console.log('[jarvis] running doctor…');
